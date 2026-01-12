@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-hidden-from-world
+  name: nginx-cost-effective
   labels:
-    app: nginx-hidden-from-world
+    app: nginx-cost-effective
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
-      app: nginx-hidden-from-world
+      app: nginx-cost-effective
   template:
     metadata:
       labels:
-        app: nginx-hidden-from-world
+        app: nginx-cost-effective
     spec:
       containers:
       - name: nginx
