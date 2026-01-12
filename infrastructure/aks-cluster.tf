@@ -118,11 +118,24 @@ resource "kubernetes_config_map" "cluster_config" {
 }
 
 resource "azurerm_dns_a_record" "variantdev_wildcard_record" {
-  name                = "*.dev"
-  zone_name           = azurerm_dns_zone.cluster_dns_zone.name
-  resource_group_name = azurerm_dns_zone.cluster_dns_zone.resource_group_name
+  name                = "*.${local.cluster_subdomain_name}"
+  zone_name           = data.azurerm_dns_zone.cluster_dns_zone.name
+  resource_group_name = data.azurerm_dns_zone.cluster_dns_zone.resource_group_name
   ttl                 = 300
   records             = [data.kubernetes_service.ingress_nginx.status[0].load_balancer[0].ingress[0].ip]
+  provider            = azurerm.dns
 
   depends_on = [helm_release.ingress_nginx]
 }
+
+resource "azurerm_dns_a_record" "variantdev_cluster_record" {
+  name                = local.cluster_subdomain_name
+  zone_name           = data.azurerm_dns_zone.cluster_dns_zone.name
+  resource_group_name = data.azurerm_dns_zone.cluster_dns_zone.resource_group_name
+  ttl                 = 300
+  records             = [data.kubernetes_service.ingress_nginx.status[0].load_balancer[0].ingress[0].ip]
+  provider            = azurerm.dns
+
+  depends_on = [helm_release.ingress_nginx]
+}
+

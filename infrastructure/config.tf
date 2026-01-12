@@ -63,6 +63,15 @@ provider "azurerm" {
   features {}
 }
 
+# Provider for DNS zone (can be in different subscription)
+provider "azurerm" {
+  alias           = "dns"
+  subscription_id = local.cluster_dns_zone_subscription_id
+  tenant_id       = local.tenant_id
+  use_cli         = true
+  features {}
+}
+
 provider "azurerm" {
   subscription_id = local.subscription_id
   tenant_id       = local.tenant_id

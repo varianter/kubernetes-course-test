@@ -19,7 +19,7 @@ resource "helm_release" "argocd" {
   values = [
     yamlencode({
       global = {
-        domain = "${local.argocd_subdomain_name}.${local.cluster_dns_zone_name}"
+        domain = "${local.argocd_subdomain_name}.${local.cluster_subdomain_name}.${local.cluster_dns_zone_name}"
       }
 
       configs = {
@@ -28,7 +28,7 @@ resource "helm_release" "argocd" {
         }
 
         cm = {
-          "url" = "https://${local.argocd_subdomain_name}.${local.cluster_dns_zone_name}"
+          "url" = "${local.argocd_subdomain_name}.${local.cluster_subdomain_name}.${local.cluster_dns_zone_name}"
         }
       }
 
@@ -41,10 +41,10 @@ resource "helm_release" "argocd" {
             "nginx.ingress.kubernetes.io/ssl-redirect"     = "true"
             "nginx.ingress.kubernetes.io/backend-protocol" = "HTTP"
           }
-          hosts = ["${local.argocd_subdomain_name}.${local.cluster_dns_zone_name}"]
+          hosts = ["${local.argocd_subdomain_name}.${local.cluster_subdomain_name}.${local.cluster_dns_zone_name}"]
           tls = [{
             secretName = "argocd-tls"
-            hosts      = ["${local.argocd_subdomain_name}.${local.cluster_dns_zone_name}"]
+            hosts      = ["${local.argocd_subdomain_name}.${local.cluster_subdomain_name}.${local.cluster_dns_zone_name}"]
           }]
         }
 
@@ -62,19 +62,20 @@ resource "helm_release" "argocd" {
   ]
 }
 
-# DNS A Record in local.cluster_dns_zone zone
-resource "azurerm_dns_zone" "cluster_dns_zone" {
+# DNS zone (from external resource group/subscription)
+data "azurerm_dns_zone" "cluster_dns_zone" {
+  provider            = azurerm.dns
   name                = local.cluster_dns_zone_name
-  resource_group_name = azurerm_resource_group.lab_resource_group.name
+  resource_group_name = local.cluster_dns_zone_resource_group
 }
 
 resource "azurerm_dns_a_record" "argocd" {
-  name                = local.argocd_subdomain_name
-  zone_name           = azurerm_dns_zone.cluster_dns_zone.name
-  resource_group_name = azurerm_dns_zone.cluster_dns_zone.resource_group_name
+  provider            = azurerm.dns
+  name                = "${local.argocd_subdomain_name}.${local.cluster_subdomain_name}"
+  zone_name           = data.azurerm_dns_zone.cluster_dns_zone.name
+  resource_group_name = data.azurerm_dns_zone.cluster_dns_zone.resource_group_name
   ttl                 = 300
   records             = [data.kubernetes_service.ingress_nginx.status[0].load_balancer[0].ingress[0].ip]
-  provider            = azurerm.internetjenester
   depends_on          = [helm_release.ingress_nginx]
 }
 

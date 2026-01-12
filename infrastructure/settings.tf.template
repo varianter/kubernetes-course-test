@@ -4,9 +4,11 @@ locals {
   argocd_github_app_installation_id = "" #
 
   ### Domain settings
-  letsencrypt_notifications_email = ""                # Email of course instructor
-  cluster_dns_zone                = "variantlabs.dev" # Public domain for ingress controller
-  cluster_dns_wildcard_subdomain  = "*.dev"
+  letsencrypt_notifications_email  = ""                # Email of course instructor
+  cluster_dns_zone_name            = "variant.dev"     # Public domain for ingress controller
+  cluster_subdomain_name           = "course"          # This will result in cluster hosted at course.variant.dev
+  cluster_dns_zone_resource_group  = ""                # Resource group containing the DNS zone (can be different from main resource group)
+  cluster_dns_zone_subscription_id = ""                # Subscription ID containing the DNS zone (can be different from main subscription)
 
 
   ### Azure Config
