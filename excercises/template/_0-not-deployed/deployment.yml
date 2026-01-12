@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-hidden-from-world
+  labels:
+    app: nginx-hidden-from-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-hidden-from-world
+  template:
+    metadata:
+      labels:
+        app: nginx-hidden-from-world
+    spec:
+      containers:
+      - name: nginx
+        image: nginxdemos/hello:plain-text
+        ports:
+        - containerPort: 80

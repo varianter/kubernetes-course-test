@@ -1,8 +1,4 @@
 locals {
-  ### Githubsettings
-  argocd_github_app_id              = "" #
-  argocd_github_app_installation_id = "" #
-
   ### Domain settings
   letsencrypt_notifications_email  = ""                # Email of course instructor
   cluster_dns_zone_name            = "variant.dev"     # Public domain for ingress controller

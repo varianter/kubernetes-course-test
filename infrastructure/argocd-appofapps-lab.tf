@@ -2,32 +2,50 @@
 resource "kubectl_manifest" "argocd_app_of_apps_lab" {
   yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
-    kind       = "Application"
+    kind       = "ApplicationSet"
     metadata = {
-      name      = "lab-apps"
+      name      = "lab-apps-generator"
       namespace = kubernetes_namespace.argocd.metadata[0].name
     }
     spec = {
-      project = "default"
-      source = {
-        repoURL        = local.github_repo_url
-        targetRevision = "HEAD"
-        path           = "deployments/dev/argocd-apps"
-        directory = {
-          recurse = true
+      goTemplate = true
+      generators = [
+        {
+          git = {
+            repoURL  = local.github_repo_url
+            revision = "HEAD"
+            directories = [
+              {
+                # Scans excercises/<namespace>/<app-name>. Excludes directories starting with _ 
+                path = "excercises/*/[!_]*"
+              }
+            ]
+        } }
+      ]
+      template = {
+        metadata = {
+          name = "{{.path.basename}}"
         }
-      }
-      destination = {
-        server    = "https://kubernetes.default.svc"
-        namespace = kubernetes_namespace.argocd.metadata[0].name
-      }
-      syncPolicy = {
-        automated = {
-          prune    = true
-          selfHeal = true
+        spec = {
+          project = "default"
+          source = {
+            repoURL        = local.github_repo_url
+            targetRevision = "HEAD"
+            path           = "{{.path.path}}"
+          }
+          destination = {
+            server    = "https://kubernetes.default.svc"
+            namespace = "{{index .path.segments 1}}"
+          }
+          syncPolicy = {
+            automated = {
+              prune    = true
+              selfHeal = true
+            }
+            syncOptions = ["CreateNamespace=true"]
+          }
         }
-      }
-    }
+    } }
   })
 
   depends_on = [
