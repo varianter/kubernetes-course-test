@@ -1,72 +1,52 @@
-# The Variant LAB Cluster
+# IMPORTANT WARNING 
+**DO NOT** use this infrastructure for any production loads. The cluster and associated resources declared here are intentionally insecure. This is acceptable for a throwaway excercise-cluster, but by means ready for prolonged usage. Examples are: 
 
-## First things first: Naming conventions for Azure Resources in this project
+ - All cluster-users are admin. This is great for teaching as participants can do and see everything. This also means that any participant can destroy or compromise the entire cluster with no audit-logs. 
+ - Cluster-resources like ArgoCD and Grafana also only have admin login, see risk and gains above. 
+ - The container-registry allows _anyone_ to pull your images. This avoid tedious logins for participants, but also opens up all your containers for the world to see
+ - All code is open-source, including infrastructure and config. 
+ - Logs are stored in-cluster and can therefore just disappear if you re-deploy the right things
+ - ACR push is authenticated via a simple and static password. This prevents easy key-rotation and does not use any modern best practises. But it lets participants easily push images to ACR too. 
+ - Terraform uses local state. This is practical as it lets terraform use your cli-credetials and run commands as you. So you don't need to configure RBAC between Terraform Cloud and Azure. However, if you delete the `.terraform`-folder, you will need to manually tear down the cluster. 
 
-We strive to use the  Cloud Adoption Framework / Azure Resource Namer for naming conventions. 
-An online version of this tool is at the time of writing available here:
-https://flcdrg.github.io/azure-resource-namer/
-If you want to create any new Azure Resource, please generate a name 
-
-## Rudimentary guide to use this folder for managing this Terraformed AKS (Azure Kubernetes Service) Cluster
-
-1. Make sure you have a Terraform Cloud account and homebrew installed
-2. If using VSCode, install the "Hashicorp Terraform" extension, and have the extension format any .tf files on save.
-Add the following to user settings (settings.json, CMD+SHIFT+P => Preferences: Open User Settings) to achieve this:
-```
- "[terraform]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.tabSize": 2
-    },
-    "[terraform-vars]": {
-        "editor.formatOnSave": true,
-        "editor.tabSize": 2
-    }
-```
-3. Log in to azure (az login). Go escalate yourself to these 2 roles with PIM:
-a) [Cloud Application Administrator](https://portal.azure.com/#view/Microsoft_Azure_PIMCommon/ResourceMenuBlade/~/MyActions/resourceId//resourceType/tenant/provider/aadroles) 
-b) [Owner (Variant Cluster)](https://portal.azure.com/#view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/azurerbac)
-c) [User Access Administrator (Variant Cluster)](https://portal.azure.com/#view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/azurerbac)
-  
-4. Add the hashicorp tap and install terraform + az-cli
-```bash
-brew tap hashicorp/tap
-brew install hashicorp/tap/terraform
-brew install az
-brew install kubelogin
-```
-5. Until we have terraform-cloud running: Make sure you have read-rights to read from the shared-kv-variant keyvault.
  
-6. Log in to terraform and azure on the Variant tenant: 
-```bash
-terraform login
-az login
-``` 
-(Choose the Kompetansebygging subscription)
+# The Variant LAB Cluster
+## Using the cluster
+### Prerequisites 
+ - azure-cli, kubectl, terraform and terraform login installed 
+ - An active Azure subscription in which you have access to deploy resources to 
+ - run `terraform init` in `infrasctructure/`
 
-7. Check if the cluster is alive: 
-```bash 
-terraform plan
-``` 
-8. Make a change to any .tf file
-9. Check to see how it will plan out: 
-```bash
-terraform plan
-``` 
-10. If the change looks good, apply it: 
-```bash
-terraform apply
-``` 
+### Create the cluster 
 
-Quick Note #1: When you´re done with the cluster, please issue a "terraform destroy" to avoid accumulating large costs over time.
-Quick Note #2:
-It might take some time to provision an AKS cluster from scratch. That is in part because we also create a new node-pool with VM(s) serving the cluster.
-Not unusual to have a 6 minute creation. So be patient when applying an AKS cluster from scratch:
-```
-azurerm_kubernetes_cluster.default: Still creating... [06m00s elapsed]
+   1. Copy `settings.tf.template` to `settings.tf` 
+   2. Fill out your desired config. 
+   3. Run `terraform apply` 
+
+
+Then, to get the config you need: 
+**Kubectl setup:**
+```bash
+az aks get-credentials --resource-group <see terraform output> --name <cluster name, see terraform output>
 ```
 
-Quick Note #3: Azure App Registrations. They require Cloud App Administrator role or equivalent, so running this locally (like we´re doing now) requires escalation of privileges to at least this role, to be able to A: Create and B: Destroy (delete all resources) in this workspace. This is due to ArgoCD warranting a separate appreg witrh a client secret. 
+**Grafana login:**
+Username: admin,
+Password: see command:
+```bash
+kubectl -n monitoring get secret grafana -o jsonpath="{.data.admin-password}" | base64 -d ; echo
+```
+
+**ArgoCD login:**
+Username: admin,
+Password: 
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d ; echo   
+```
+
+
+### Teardown 
+`terraform destroy`
 
 
 ## Useful commands for kubectl:
