@@ -1,5 +1,5 @@
 locals {
-  environment           = "lab"
+  environment           = "k8s-test"
   location              = "North Europe"
   location_short        = "northeurope"
   location_abbreviation = "ne"
@@ -12,7 +12,7 @@ locals {
   argocd_subdomain_name = "argocd"
 
 
-  workload_name = "platform"
+  workload_name = "course"
   # Pay attention to the below node_pool variables. To allow for 110 pods, we need at least Standard_D2as_v4 VM size.
   node_pool_vm_size               = "Standard_B2s"
   node_pool_count                 = 1
