@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: node-api-ingress
+  namespace: jonas
+  annotations:
+    "cert-manager.io/cluster-issuer": "letsencrypt-lab"
+    "nginx.ingress.kubernetes.io/ssl-redirect": "true"
+    "nginx.ingress.kubernetes.io/backend-protocol": "HTTP"
+
+spec:
+  tls:
+  - hosts:
+    - jonas-node-api.course-test.variant.dev
+    secretName: node-api-tls
+  rules:
+  - host: jonas-node-api.course-test.variant.dev # Assuming .dev.nav.no as the domain, please change if this is incorrect
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: node-api
+            port:
+              number: 80
+  ingressClassName: nginx

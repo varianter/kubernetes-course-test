@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api
+  namespace: jonas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-api
+  template:
+    metadata:
+      labels:
+        app: node-api
+    spec:
+      containers:
+      - name: node-api
+        image: variantcoursetesttemporaryacr.azurecr.io/hello-world-api:v1
+        ports:
+        - containerPort: 80
+        - targetPort: 3000
