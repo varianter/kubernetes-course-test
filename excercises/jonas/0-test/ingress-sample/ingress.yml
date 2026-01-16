@@ -3,7 +3,14 @@ kind: Ingress
 metadata:
   name: echo-server-ingress
   namespace: jonas
+  annotations:
+    "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+    "nginx.ingress.kubernetes.io/ssl-redirect": "true"
 spec:
+  tls:
+  - hosts:
+    - jonas-0-ingress.course-test.variant.dev
+    secretName: echo-server-tls
   rules:
   - host: jonas-0-ingress.course-test.variant.dev # Assuming .dev.nav.no as the domain, please change if this is incorrect
     http:
