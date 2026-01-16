@@ -4,8 +4,10 @@ metadata:
   name: echo-server-ingress
   namespace: jonas
   annotations:
-    "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+    "cert-manager.io/cluster-issuer": "letsencrypt-lab"
     "nginx.ingress.kubernetes.io/ssl-redirect": "true"
+    "nginx.ingress.kubernetes.io/backend-protocol": "HTTP"
+
 spec:
   tls:
   - hosts:
