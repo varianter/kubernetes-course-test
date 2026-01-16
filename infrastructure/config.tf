@@ -14,7 +14,7 @@ locals {
 
   workload_name = "course"
   # Pay attention to the below node_pool variables. To allow for 110 pods, we need at least Standard_D2as_v4 VM size.
-  node_pool_vm_size               = "Standard_B2s"
+  node_pool_vm_size               = "Standard_D4s_v3"
   node_pool_count                 = 1
   node_pool_max_pods              = 60
   repository_url                  = ""

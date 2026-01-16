@@ -32,10 +32,11 @@ resource "azurerm_kubernetes_cluster" "default" {
     # Important comment regarding vm_size, from official TF docs:
     # temporary_name_for_rotation must be specified when attempting a resize.
     # E.g. vm_size set to temporary_name_for_rotation first, then applied, then the new size.
-    vm_size         = local.node_pool_vm_size
-    vnet_subnet_id  = azurerm_subnet.aks.id
-    max_pods        = local.node_pool_max_pods
-    os_disk_size_gb = 30
+    vm_size                     = local.node_pool_vm_size
+    vnet_subnet_id              = azurerm_subnet.aks.id
+    max_pods                    = local.node_pool_max_pods
+    temporary_name_for_rotation = "temp"
+    os_disk_size_gb             = 30
     upgrade_settings {
       drain_timeout_in_minutes      = 0
       max_surge                     = "10%"
